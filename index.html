@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Student Agenda</title>
+  <meta name="description" content="Homework, bells, announcements, and the school calendar for Rensselaer Central High School.">
+  <meta name="theme-color" content="#A61420">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Agenda">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <img src="icons/icon.svg" alt="" width="32" height="32">
+      <div>
+        <div class="brand-name">Student Agenda</div>
+        <div class="brand-sub">Rensselaer Central High School</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="open-settings" aria-label="Settings">
+      <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2-1.6-2-3.4-2.4 1a7.6 7.6 0 0 0-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 0 0-1.7 1l-2.4-1-2 3.4L6.6 11a7.5 7.5 0 0 0 0 2l-2 1.6 2 3.4 2.4-1a7.6 7.6 0 0 0 1.7 1l.4 2.5h4l.4-2.5a7.6 7.6 0 0 0 1.7-1l2.4 1 2-3.4zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg>
+    </button>
+  </header>
+
+  <main id="view" tabindex="-1"></main>
+
+  <nav class="tabs" aria-label="Sections">
+    <button data-tab="today"><span class="tab-ico">◔</span>Today</button>
+    <button data-tab="homework"><span class="tab-ico">✓</span>Homework</button>
+    <button data-tab="bells"><span class="tab-ico">⏰</span>Bells</button>
+    <button data-tab="news"><span class="tab-ico">📣</span>News<span class="badge" id="news-badge" hidden></span></button>
+    <button data-tab="calendar"><span class="tab-ico">📅</span>Calendar</button>
+  </nav>
+
+  <dialog id="hw-dialog">
+    <form method="dialog" id="hw-form">
+      <h2 id="hw-dialog-title">Add homework</h2>
+      <label>What is it?
+        <input name="title" required maxlength="120" placeholder="e.g. Read chapter 4, questions 1–10" autocomplete="off">
+      </label>
+      <div class="row">
+        <label>Class
+          <select name="period"></select>
+        </label>
+        <label>Due
+          <input name="due" type="date" required>
+        </label>
+      </div>
+      <label><span>Notes <span class="dim">(optional)</span></span>
+        <textarea name="notes" rows="3" maxlength="1000"></textarea>
+      </label>
+      <div class="dialog-actions">
+        <button type="button" class="btn danger" id="hw-delete" hidden>Delete</button>
+        <span class="spacer"></span>
+        <button type="button" class="btn" value="cancel" id="hw-cancel">Cancel</button>
+        <button type="submit" class="btn primary">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="settings-dialog">
+    <form method="dialog" id="settings-form">
+      <h2>Settings</h2>
+      <fieldset>
+        <legend>My classes</legend>
+        <p class="dim small">Names show up on your bell schedule and homework.</p>
+        <div id="class-fields" class="class-grid"></div>
+      </fieldset>
+      <fieldset>
+        <legend>My lunch</legend>
+        <div class="seg" id="lunch-seg"></div>
+      </fieldset>
+      <fieldset>
+        <legend>2-hour delay group</legend>
+        <div class="seg" id="group-seg"></div>
+        <details class="small">
+          <summary>Which group am I?</summary>
+          <p>Your group follows your FLEX teacher.</p>
+          <p><strong>Group A</strong> (lunch first): <span id="group-a"></span></p>
+          <p><strong>Group B</strong> (FLEX first): <span id="group-b"></span></p>
+        </details>
+      </fieldset>
+      <fieldset>
+        <legend>My data</legend>
+        <p class="dim small">Homework is saved only on this device. Back it up before switching devices or clearing your browser.</p>
+        <div class="btn-row">
+          <button type="button" class="btn" id="backup">Back up</button>
+          <label class="btn file-btn">Restore<input type="file" id="restore" accept="application/json,.json" hidden></label>
+          <button type="button" class="btn" id="clear-done">Clear finished homework</button>
+        </div>
+      </fieldset>
+      <div class="dialog-actions">
+        <span class="spacer"></span>
+        <button type="submit" class="btn primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="data/calendar.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

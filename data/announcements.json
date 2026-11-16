@@ -1,0 +1,27 @@
+{
+  "_howto": "Newest first. Edit this file and push — every student's app picks it up on next open. 'pinned' keeps an item at the top. 'expires' (yyyy-MM-dd) hides it after that date. 'delayDays' turns on the 2-Hour Delay schedule for everyone on those dates.",
+  "delayDays": [],
+  "items": [
+    {
+      "id": "2026-11-16-thanksgiving",
+      "date": "2026-11-16",
+      "title": "Thanksgiving Break",
+      "body": "No school Wednesday, November 25 through Friday, November 27. Classes resume Monday, November 30.",
+      "pinned": true,
+      "expires": "2026-11-30"
+    },
+    {
+      "id": "2026-11-16-semester",
+      "date": "2026-11-16",
+      "title": "End of 1st Semester is December 17",
+      "body": "The 2nd 9 weeks and 1st semester end Thursday, December 17. Christmas Break starts Friday, December 18.",
+      "expires": "2026-12-18"
+    },
+    {
+      "id": "2026-11-16-welcome",
+      "date": "2026-11-16",
+      "title": "Welcome to Student Agenda",
+      "body": "Add your classes under Settings, then track homework on the Homework tab. Your homework stays on this device — it is never sent anywhere. Use Settings → Back up to save a copy."
+    }
+  ]
+}
