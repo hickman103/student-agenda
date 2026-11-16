@@ -12,6 +12,7 @@ const SHELL = [
   "data/announcements.json",
   "manifest.webmanifest",
   "icons/icon.svg",
+  "icons/bomber-bob.png",
   "icons/icon-192.png",
   "icons/icon-512.png"
 ];

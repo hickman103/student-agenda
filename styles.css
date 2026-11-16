@@ -64,7 +64,7 @@ h2, h3 { margin: 0; line-height: 1.25; }
   background: var(--red); color: var(--red-ink);
 }
 .brand { display: flex; align-items: center; gap: 10px; }
-.brand img { border-radius: 8px; background: #fff; }
+.brand .mascot { display: block; height: 48px; width: auto; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
 .brand-name { font-weight: 700; font-size: 17px; }
 .brand-sub { font-size: 12px; opacity: .85; }
 .icon-btn {
@@ -270,7 +270,7 @@ details p { margin: 6px 0; }
   main { order: 2; width: 100%; }
   .tabs {
     order: 1; width: calc(100% - 32px);
-    position: sticky; top: 60px; bottom: auto; max-width: 720px; margin: 10px auto 0;
+    position: sticky; top: 68px; bottom: auto; max-width: 720px; margin: 10px auto 0;
     border: 1px solid var(--line); border-radius: 14px;
   }
   .tabs button { flex-direction: row; justify-content: center; gap: 6px; font-size: 14px; padding: 9px 4px; }
