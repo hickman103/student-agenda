@@ -30,6 +30,10 @@ Trade-off: clearing browser data or switching devices loses the homework. Settin
 
 ## Posting announcements
 
+Announcements and student data never mix: homework and settings live in each student's browser, and the app only *reads* the announcements file. Posting, editing, or deleting announcements — or pushing any app update — leaves every student's homework alone. A malformed file is ignored and the last good copy stays up.
+
+**Quickest way:** on GitHub, open `data/announcements.json` → pencil icon → add an item at the top of `items` → *Commit changes*. Live within about 10 minutes (GitHub Pages caches files for up to 10).
+
 Edit `data/announcements.json` and publish. Students see it the next time they open the app (or come back to the tab). The Chrome extension reads the same hosted file if it was built with `NEWS_URL` (see below); the last copy fetched is kept for offline use.
 
 ```json
@@ -88,7 +92,7 @@ Output: `dist/extension/` and `dist/student-agenda-extension.zip`.
 Once the web app is hosted, build with its announcements URL so posts reach the extension without a new release:
 
 ```bash
-NEWS_URL=https://YOUR-HOST/data/announcements.json ./build.sh
+NEWS_URL=https://hickman103.github.io/student-agenda/data/announcements.json ./build.sh
 ```
 
 Without `NEWS_URL` the extension shows the announcements bundled at build time.
@@ -102,7 +106,7 @@ Without `NEWS_URL` the extension shows the announcements bundled at build time.
 
 ## Deploying to students
 
-1. Host the folder on any HTTPS static host — GitHub Pages, the district web server, or Google Sites embedding won't work (it needs its own origin for offline + install).
+1. **Live at https://hickman103.github.io/student-agenda/** — GitHub Pages, published from `main`. Every push to `main` redeploys; changes reach students within about 10 minutes. (Google Sites embedding won't work; the app needs its own origin for offline + install.)
 2. **Chromebooks:** Google Admin console → Devices → Chrome → Apps & extensions → Users & browsers → select the student OU → add by URL ("Add the Chrome app or extension by ID / URL" → Web app) → set to **Force install**. It appears on the shelf as "Agenda."
 3. **Phones:** students open the URL and choose *Add to Home Screen* (iOS Safari) or *Install app* (Android Chrome).
 4. **Chrome extension:** publish `dist/student-agenda-extension.zip` to the Chrome Web Store as **Private** (visible only to the rensselaerschools.org domain) or **Unlisted**, then in Google Admin → Apps & extensions → Users & browsers → student OU → add by extension ID → **Force install** and **Pin to browser toolbar**.
