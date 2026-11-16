@@ -8,6 +8,7 @@ const SHELL = [
   "index.html",
   "styles.css",
   "app.js",
+  "data/config.js",
   "data/calendar.js",
   "data/announcements.json",
   "manifest.webmanifest",

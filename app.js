@@ -1,6 +1,7 @@
 // Student Agenda — Rensselaer Central High School.
 // Homework lives in localStorage on the student's device and never leaves it.
 // Bells and calendar come from data/calendar.js; announcements from data/announcements.json.
+// The same files run as the web app (PWA) and as the Chrome extension side panel.
 
 // MARK: - State
 
@@ -616,14 +617,24 @@ hwForm.addEventListener("submit", (e) => {
 });
 
 document.getElementById("hw-cancel").addEventListener("click", () => hwDialog.close());
-document.getElementById("hw-delete").addEventListener("click", () => {
-  if (!editing || !confirm(`Delete "${editing.title}"?`)) return;
+document.getElementById("hw-delete").addEventListener("click", async () => {
+  if (!editing || !(await askConfirm(`Delete "${editing.title}"?`, "Delete"))) return;
   state.homework = state.homework.filter((x) => x !== editing);
   save();
   hwDialog.close();
   render();
   toast("Deleted");
 });
+
+// In-page confirm. Native confirm() is blocked in Chrome side panels.
+function askConfirm(message, okLabel = "OK") {
+  const dlg = document.getElementById("confirm-dialog");
+  document.getElementById("confirm-msg").textContent = message;
+  document.getElementById("confirm-ok").textContent = okLabel;
+  dlg.returnValue = "";
+  dlg.showModal();
+  return new Promise((resolve) => dlg.addEventListener("close", () => resolve(dlg.returnValue === "ok"), { once: true }));
+}
 
 // MARK: - Settings dialog
 
@@ -671,7 +682,7 @@ document.getElementById("restore").addEventListener("change", async (e) => {
   try {
     const data = JSON.parse(await file.text());
     if (data.app !== "student-agenda" || !Array.isArray(data.homework)) throw new Error("not a backup");
-    if (!confirm(`Replace what's on this device with the backup from ${new Date(data.saved).toLocaleDateString()}? (${data.homework.length} homework items)`)) return;
+    if (!(await askConfirm(`Replace what's on this device with the backup from ${new Date(data.saved).toLocaleDateString()}? (${data.homework.length} homework items)`, "Restore"))) return;
     const { app, version, saved, ...rest } = data;
     state = { ...defaults(), ...rest, tab: state.tab };
     save();
@@ -682,10 +693,10 @@ document.getElementById("restore").addEventListener("change", async (e) => {
   }
 });
 
-document.getElementById("clear-done").addEventListener("click", () => {
+document.getElementById("clear-done").addEventListener("click", async () => {
   const n = state.homework.filter((x) => x.done).length;
   if (!n) { toast("No finished homework to clear"); return; }
-  if (!confirm(`Remove ${n} finished item${n === 1 ? "" : "s"}?`)) return;
+  if (!(await askConfirm(`Remove ${n} finished item${n === 1 ? "" : "s"}?`, "Remove"))) return;
   state.homework = state.homework.filter((x) => !x.done);
   save();
   toast("Cleared");
@@ -693,11 +704,28 @@ document.getElementById("clear-done").addEventListener("click", () => {
 
 // MARK: - Announcements
 
+const NEWS_CACHE = "studentAgenda.news";
+
+// The web app fetches its own copy. The Chrome extension fetches the hosted copy
+// (AgendaConfig.newsUrl) so posts reach it without a new extension release.
+async function fetchNews() {
+  const urls = [...new Set([AgendaConfig.newsUrl, "data/announcements.json"])];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, { cache: "no-cache" });
+      if (!res.ok) continue;
+      const data = await res.json();
+      try { localStorage.setItem(NEWS_CACHE, JSON.stringify(data)); } catch {}
+      return data;
+    } catch {}
+  }
+  try { return JSON.parse(localStorage.getItem(NEWS_CACHE)); } catch { return null; }
+}
+
 async function loadNews() {
   try {
-    const res = await fetch("data/announcements.json", { cache: "no-cache" });
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
+    const data = await fetchNews();
+    if (!data) throw new Error("no news");
     const today = isoOf(nowCT());
     const items = (data.items || [])
       .filter((n) => n.id && n.title && (!n.expires || n.expires >= today) && n.date <= today)
@@ -718,6 +746,7 @@ render();
 loadNews();
 setInterval(tick, 1000);
 
-if ("serviceWorker" in navigator && location.protocol !== "file:") {
+// Only on the web; the extension is already offline and has no use for it.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }

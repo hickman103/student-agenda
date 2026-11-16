@@ -2,7 +2,13 @@
 
 A homework planner for Rensselaer Central High School students, with the bell schedule, announcements, and the school calendar built in. Built from [Bomber Bell](https://github.com/hickman103/bomber-bell) — same bell times, same school calendar, same live-period logic and traffic-light colors.
 
-It's a web app (PWA): one set of static files that runs on Chromebooks, phones, and laptops, installs to the home screen or shelf, and works offline.
+One codebase, three ways to run it:
+
+| Form | How students get it |
+|---|---|
+| **Web app** | Open the hosted URL in any browser |
+| **Mobile app (iOS / Android)** | Open the URL, then *Add to Home Screen* (iOS Safari) or *Install app* (Android Chrome). Runs full-screen with its own icon and works offline |
+| **Chrome extension** | Toolbar icon (or Alt+Shift+A) opens Student Agenda in Chrome's side panel, docked beside whatever page the student is on |
 
 ## What students get
 
@@ -24,7 +30,7 @@ Trade-off: clearing browser data or switching devices loses the homework. Settin
 
 ## Posting announcements
 
-Edit `data/announcements.json` and publish. Students see it the next time they open the app (or come back to the tab).
+Edit `data/announcements.json` and publish. Students see it the next time they open the app (or come back to the tab). The Chrome extension reads the same hosted file if it was built with `NEWS_URL` (see below); the last copy fetched is kept for offline use.
 
 ```json
 {
@@ -69,11 +75,37 @@ cd ~/Developer/student-agenda && python3 -m http.server 8742
 
 Then open http://localhost:8742. (Service workers need `http://localhost` or HTTPS — opening `index.html` as a file works but won't install or run offline.)
 
+## Chrome extension
+
+The extension is the same app, opened in Chrome's side panel. `extension/` holds the only extension-specific files (`manifest.json`, `background.js`); `build.sh` copies the shared app files next to them.
+
+```bash
+./build.sh
+```
+
+Output: `dist/extension/` and `dist/student-agenda-extension.zip`.
+
+Once the web app is hosted, build with its announcements URL so posts reach the extension without a new release:
+
+```bash
+NEWS_URL=https://YOUR-HOST/data/announcements.json ./build.sh
+```
+
+Without `NEWS_URL` the extension shows the announcements bundled at build time.
+
+**Try it:** `chrome://extensions` → turn on Developer mode → *Load unpacked* → pick `dist/extension`. Click the toolbar icon (pin it from the puzzle-piece menu).
+
+**Notes**
+- Homework in the extension is stored separately from the web app (each has its own storage). Settings → Back up / Restore moves it between them.
+- Bump `version` in `extension/manifest.json` for every release.
+- Calendar or bell changes need a rebuild and a new release; announcements don't (with `NEWS_URL`).
+
 ## Deploying to students
 
 1. Host the folder on any HTTPS static host — GitHub Pages, the district web server, or Google Sites embedding won't work (it needs its own origin for offline + install).
 2. **Chromebooks:** Google Admin console → Devices → Chrome → Apps & extensions → Users & browsers → select the student OU → add by URL ("Add the Chrome app or extension by ID / URL" → Web app) → set to **Force install**. It appears on the shelf as "Agenda."
 3. **Phones:** students open the URL and choose *Add to Home Screen* (iOS Safari) or *Install app* (Android Chrome).
+4. **Chrome extension:** publish `dist/student-agenda-extension.zip` to the Chrome Web Store as **Private** (visible only to the rensselaerschools.org domain) or **Unlisted**, then in Google Admin → Apps & extensions → Users & browsers → student OU → add by extension ID → **Force install** and **Pin to browser toolbar**.
 
 Updates go live on the next open — the service worker is network-first, so there's no cache to bump.
 
@@ -81,6 +113,10 @@ Updates go live on the next open — the service worker is network-first, so the
 
 ```
 index.html               shell, dialogs
+data/config.js           announcements URL (rewritten by build.sh for the extension)
+extension/manifest.json  Chrome extension manifest (side panel)
+extension/background.js  opens the side panel from the toolbar icon
+build.sh                 packages the extension into dist/
 app.js                   state, views, live readout, homework
 styles.css               light/dark theme, phone + Chromebook layouts
 data/calendar.js         bells, closures, special days, calendar events
