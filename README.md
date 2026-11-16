@@ -46,6 +46,8 @@ Edit `data/announcements.json` and publish. Students see it the next time they o
 
 ## Schedules and calendar
 
+All times are Central (America/Chicago), the school's zone. The clock, countdowns, "today," and due-date labels use Chicago time even when a device is set to Eastern or anything else (`nowCT()` in `app.js`).
+
 Everything lives in `data/calendar.js`:
 
 - `Schedule` — bell times. `t(h, m, pm)` takes a clock time and returns minutes after midnight, so `t(1, 30, true)` is 1:30 PM.

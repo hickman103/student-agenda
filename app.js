@@ -39,6 +39,17 @@ function save() {
 
 // MARK: - Dates
 
+// RCHS runs on Central time. Every "now" is Chicago wall-clock time, whatever
+// zone the device is set to: a Date whose local fields read as Chicago time.
+const CT = new Intl.DateTimeFormat("en-US", {
+  timeZone: "America/Chicago", hourCycle: "h23",
+  year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric", second: "numeric"
+});
+function nowCT() {
+  const p = Object.fromEntries(CT.formatToParts(new Date()).map((x) => [x.type, Number(x.value)]));
+  return new Date(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+}
+
 const pad = (n) => String(n).padStart(2, "0");
 const isoOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fromIso = (s) => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
@@ -278,7 +289,7 @@ function hwItem(hw, todayIso) {
 }
 
 function viewToday() {
-  const now = new Date();
+  const now = nowCT();
   const todayIso = isoOf(now);
   const open = state.homework.filter((x) => !x.done);
   const urgent = open.filter((x) => daysBetween(todayIso, x.due) <= 1);
@@ -316,7 +327,7 @@ function viewToday() {
 }
 
 function viewHomework() {
-  const todayIso = isoOf(new Date());
+  const todayIso = isoOf(nowCT());
   const filter = state.hwFilter;
   const list = state.homework.filter((x) => (filter === "done" ? x.done : !x.done));
 
@@ -344,7 +355,7 @@ function viewHomework() {
 }
 
 function viewBells() {
-  const now = new Date();
+  const now = nowCT();
   const status = dayStatus(now);
   const { mode, note } = modeFor(now);
   const shown = viewBells.mode || (status.open ? mode : "regular");
@@ -455,7 +466,7 @@ function eventRow(e) {
 }
 
 function viewCalendar() {
-  const today = new Date();
+  const today = nowCT();
   if (!calCursor) calCursor = new Date(today.getFullYear(), today.getMonth(), 1);
   if (!calSelected) calSelected = isoOf(today);
 
@@ -545,17 +556,17 @@ function go(tab) {
 // Once a second, refresh only the live bits so inputs keep focus.
 function tick() {
   const live = document.getElementById("live");
-  if (live) live.replaceChildren(statusCard(readout(new Date())));
+  if (live) live.replaceChildren(statusCard(readout(nowCT())));
   const table = document.getElementById("bell-table");
   if (table && state.tab === "bells") {
-    const now = new Date();
+    const now = nowCT();
     const shown = viewBells.mode || (dayStatus(now).open ? modeFor(now).mode : "regular");
     table.replaceChildren(bellTable(shown, now, dayStatus(now).open && shown === modeFor(now).mode));
   }
   // Past midnight: re-render so "today" moves.
-  if (tick.day !== isoOf(new Date())) {
+  if (tick.day !== isoOf(nowCT())) {
     if (tick.day) render();
-    tick.day = isoOf(new Date());
+    tick.day = isoOf(nowCT());
   }
 }
 
@@ -578,7 +589,7 @@ function openHomework(hw = null, dueIso = null) {
   sel.replaceChildren(
     ...PERIODS.map((p) => h("option", { value: p }, periodLabel(p))),
     h("option", { value: "" }, "Other"));
-  const tomorrow = nextSchoolDay(new Date()) || addDays(new Date(), 1);
+  const tomorrow = nextSchoolDay(nowCT()) || addDays(nowCT(), 1);
   hwForm.elements.title.value = hw ? hw.title : "";
   sel.value = hw ? hw.period : (openHomework.lastPeriod ?? "1");
   hwForm.elements.due.value = hw ? hw.due : (dueIso || isoOf(tomorrow));
@@ -646,7 +657,7 @@ setDialog.addEventListener("close", render);
 document.getElementById("backup").addEventListener("click", () => {
   const { tab, hwFilter, ...keep } = state;
   const blob = new Blob([JSON.stringify({ app: "student-agenda", version: 1, saved: new Date().toISOString(), ...keep }, null, 2)], { type: "application/json" });
-  const a = h("a", { href: URL.createObjectURL(blob), download: `student-agenda-backup-${isoOf(new Date())}.json` });
+  const a = h("a", { href: URL.createObjectURL(blob), download: `student-agenda-backup-${isoOf(nowCT())}.json` });
   document.body.append(a);
   a.click();
   a.remove();
@@ -687,7 +698,7 @@ async function loadNews() {
     const res = await fetch("data/announcements.json", { cache: "no-cache" });
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
-    const today = isoOf(new Date());
+    const today = isoOf(nowCT());
     const items = (data.items || [])
       .filter((n) => n.id && n.title && (!n.expires || n.expires >= today) && n.date <= today)
       .sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.date.localeCompare(a.date));
